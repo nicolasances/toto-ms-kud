@@ -27,4 +27,4 @@ class GamesEventHandler:
             # KUD Uploaded Event Handling
             if decoded_message["type"] == "kudUploaded": 
 
-               KudUploadedEH().handle_event(decoded_message)
+               return KudUploadedEH().handle_event(decoded_message)

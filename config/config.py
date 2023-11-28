@@ -18,8 +18,8 @@ class Config:
         self.mongo_user = access_secret_version("toto-ms-kud-mongo-user")
         self.mongo_pswd = access_secret_version("toto-ms-kud-mongo-pswd")
         self.mongo_host = access_secret_version("mongo-host")
-
-        self.mongo_client = pymongo.MongoClient(f"mongodb://{self.mongo_user}:{self.mongo_pswd}@{self.mongo_host}:27017")
+        
+        self.mongo_connection_string = f"mongodb://{self.mongo_user}:{self.mongo_pswd}@{self.mongo_host}:27017"
 
         print(f"Configuration Loaded")
 

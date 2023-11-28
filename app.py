@@ -16,8 +16,7 @@ def smoke():
 @app.route('/events/games', methods=["POST"])
 def on_game_event():
     print("POST /events/games")
-    GamesEventHandler().process_event(request)
-    return {"status": "processed"}
+    return GamesEventHandler().process_event(request)
 
 if __name__ == '__main__':
     app.run()
