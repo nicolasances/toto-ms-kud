@@ -1,6 +1,9 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from kud.evt.OnGamesEvent import GamesEventHandler
+from config.config import Config
+
+Config()
 
 app = Flask(__name__)
 CORS(app, origins=["*"])
