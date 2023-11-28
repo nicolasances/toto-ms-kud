@@ -1,3 +1,4 @@
+import base64
 
 class GamesEventHandler:
 
@@ -15,6 +16,6 @@ class GamesEventHandler:
 
             print(f"Received message data: {message_data}")
 
-            decoded_message = message_data.decode("base64")
+            decoded_message = base64.b64decode(message_data).decode('utf-8')
             
             print(f"Received Pub/Sub message: {decoded_message}")
