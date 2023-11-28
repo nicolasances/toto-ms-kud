@@ -12,6 +12,9 @@ class GamesEventHandler:
 
         if "message" in data: 
             message_data = data["message"]["data"]
+
+            print(f"Received message data: {message_data}")
+
             decoded_message = message_data.decode("base64")
             
             print(f"Received Pub/Sub message: {decoded_message}")
