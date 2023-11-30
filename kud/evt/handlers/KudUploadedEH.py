@@ -7,6 +7,7 @@ from kud.KudExtract import KudExtract
 from kud.util.kudutil import get_separators
 from config.config import Config
 from kud.model.kudmodel import KudStore
+from kud.evt.publisher.KudEventPublisher import KudEventPublisher, KudEvent
 
 class KudUploadedEH:
 
@@ -64,6 +65,9 @@ class KudUploadedEH:
 
             # 5.1 Convert to POs
             save_result = kud_store.save_kud_data(kud_data, user_email, kud_bucket_filepath, year, month)
+
+        # 6. Publish the event on Pub Sub
+        KudEventPublisher().publish_event(None, kud_id, KudEvent.kud_processed, f"Kud [{kud_id}] successfully processed", {'userEmail': user_email, 'year': year, 'month': month, 'kudId': kud_id, 'nElements': save_result["n_inserted"]})
 
         return {'msg': f"Kud [{kud_id}] processed", 'items': save_result["n_inserted"]}
 
