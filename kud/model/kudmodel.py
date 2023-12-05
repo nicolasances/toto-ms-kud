@@ -9,6 +9,7 @@ F_USER = "user"
 F_YEAR_MONTH = "yearMonth"
 F_KUD_ID = "kudId"
 F_KUD_FILEPATH = "kudFilepath"
+F_STATUS = "status"                 # The status defines if items have been "reconciled", set as "invalid" or haven't been looked at yet (status is null)
 
 class KudStore: 
 
@@ -68,3 +69,54 @@ class KudStore:
 
     def build_kud_id(self, year, month): 
         return f"kud-{year}-{month}"
+    
+    def get_transactions(self, user_email, payments_only = False, max_results = None, non_processed_only = False): 
+        """
+        This method retrieves the transactions from the database
+
+        Parameters
+        - user_email (str): the user email
+        - payments_only (bool): default False, pass True if you want to filter only payments (leaving incomes aside)
+        - max_results (int): default None (unlimited), pass a number if you want to limit the number of returned results 
+        - non_processed_only (bool): default False, pass True if you only want to extract transactions that have not been processed
+
+        Returns: 
+        - list: a list of transactions
+        """
+
+        query = {}
+        query[F_USER] = user_email
+        
+        # If the user only wants payments
+        if payments_only: 
+            query[F_AMOUNT] = {"$lt": 0}
+
+        # If the user only wants "non processed" items
+        if non_processed_only: 
+            null_filter = {}
+            null_filter[F_STATUS] = {"$eq": None}
+
+            exist_filter = {}
+            exist_filter[F_STATUS] = {"$exists": False}
+
+            query["$or"] = [null_filter, exist_filter]
+
+        # Run the query
+        cursor = self.db.kud.find(query).limit(max_results)
+
+        # Return the data
+        docs = []
+
+        for doc in cursor: 
+            to = {}
+            to["id"] = str(doc["_id"])
+            to[F_DATE] = doc[F_DATE]
+            to[F_TEXT] = doc[F_TEXT]
+            to[F_AMOUNT] = doc[F_AMOUNT]
+            to[F_USER] = doc[F_USER]
+            to[F_YEAR_MONTH] = doc[F_YEAR_MONTH]
+            to[F_KUD_ID] = doc[F_KUD_ID]
+
+            docs.append(to)
+
+        return docs

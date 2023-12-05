@@ -1,9 +1,7 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from kud.evt.OnGamesEvent import GamesEventHandler
-from config.config import Config
-
-Config()
+from kud.dlg.GetKudTransactions import GetKudTransactions
 
 app = Flask(__name__)
 CORS(app, origins=["*"])
@@ -16,7 +14,13 @@ def smoke():
 @app.route('/events/games', methods=["POST"])
 def on_game_event():
     print("POST /events/games")
-    return GamesEventHandler().process_event(request)
+    GamesEventHandler().process_event(request)
+    return {"status": "processed"}
+
+@app.route('/transactions', methods=["GET"])
+def get_transactions():
+    print("GET /transactions")
+    return GetKudTransactions().do(request)
 
 if __name__ == '__main__':
     app.run()
