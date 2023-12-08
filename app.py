@@ -3,6 +3,7 @@ from flask_cors import CORS
 from kud.evt.OnGamesEvent import GamesEventHandler
 from kud.dlg.GetKudTransactions import GetKudTransactions
 from kud.dlg.PostTransactionReconciliation import PostTransactionReconciliation
+from kud.dlg.CountReconciliations import CountReconciliations
 
 app = Flask(__name__)
 CORS(app, origins=["*"])
@@ -28,6 +29,10 @@ def post_reconciliation():
     print("POST /reconciliations")
     return PostTransactionReconciliation().do(request)
 
+@app.route('/reconciliations/count', methods=["GET"])
+def count_reconciliations(): 
+    print("GET /reconciliations/count")
+    return CountReconciliations().do(request)
 
 if __name__ == '__main__':
     app.run()

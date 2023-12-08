@@ -198,6 +198,7 @@ class KudStore:
         recon[RF_TOTO_TX_ID] = toto_transaction.id
         recon[RF_TOTO_TX_TEXT] = toto_transaction.description
         recon[RF_TOTO_TX_YEARMONTH] = toto_transaction.year_month
+        recon[RF_USER] = kud_transaction.user
 
         print(f"Saving new reconciliation record: {recon}")
 
@@ -209,5 +210,16 @@ class KudStore:
         
         self.db[COLL_KUD].update_one({"_id": ObjectId(kud_transaction.id)}, {"$set": {F_STATUS: KudStatus.RECONCILED}})
 
+    def count_reconciliations(self, user_email: str): 
+        """
+        Retrieves the count of reconciliation records for the specified user. 
+
+        Parameters 
+        - user_email (str): the user email
+
+        Returns:
+        - int: the count of reconciliation records
+        """
+        return self.db[COLL_RECONCILIATIONS].count_documents({RF_USER: user_email})
         
 
