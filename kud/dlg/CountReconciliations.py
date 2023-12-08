@@ -1,6 +1,6 @@
 import pymongo
 from config.config import Config
-from kud.model.kudmodel import KudStore, KudTransaction
+from kud.model.store import KudStore, KudTransaction
 from kud.model.toto_transaction import TotoTransaction
 
 class CountReconciliations: 

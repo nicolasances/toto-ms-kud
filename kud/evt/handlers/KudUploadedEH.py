@@ -6,7 +6,7 @@ from google.cloud import storage
 from kud.KudExtract import KudExtract
 from kud.util.kudutil import get_separators
 from config.config import Config
-from kud.model.kudmodel import KudStore
+from kud.model.store import KudStore
 from kud.evt.publisher.KudEventPublisher import KudEventPublisher, KudEvent
 
 class KudUploadedEH:

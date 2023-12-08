@@ -3,26 +3,33 @@ import pymongo
 from config.config import Config
 from kud.model.store import KudStore
 
-class GetKudTransactions: 
+class CountKudTransactions: 
 
     def __init__(self): 
         self.config = Config()
 
     def do(self, request): 
+        """
+        This method counts the number of Kud Transactions available for the user
 
+        Paramters
+        - request.args.user should countain the user email
+        """
         # Extract core data from the request
         user_email = request.args.get('user')
-        only_payments = request.args.get('paymentsOnly', False)
-        max_results = int(request.args.get('maxResults', 0))
 
         # Get the data from the store
         with pymongo.MongoClient(self.config.mongo_connection_string) as client: 
+
             db = client.kud
+            
+            # Instantiate the store
             kud_store = KudStore(db)
 
-            payments = kud_store.get_transactions(user_email, payments_only=only_payments, max_results=max_results, non_processed_only=True)
+            # Count the Kud Transactions
+            count = kud_store.count_transactions(user_email)
 
         return {
-            "payments": payments
+            "count": count
         }
 

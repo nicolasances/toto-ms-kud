@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from kud.evt.OnGamesEvent import GamesEventHandler
 from kud.dlg.GetKudTransactions import GetKudTransactions
+from kud.dlg.CountKudTransactions import CountKudTransactions
 from kud.dlg.PostTransactionReconciliation import PostTransactionReconciliation
 from kud.dlg.CountReconciliations import CountReconciliations
 
@@ -23,6 +24,11 @@ def on_game_event():
 def get_transactions():
     print("GET /transactions")
     return GetKudTransactions().do(request)
+
+@app.route('/transactions/count', methods=["GET"])
+def count_transactions():
+    print("GET /transactions/count")
+    return CountKudTransactions().do(request)
 
 @app.route('/reconciliations', methods=["POST"])
 def post_reconciliation(): 

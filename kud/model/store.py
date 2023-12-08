@@ -166,6 +166,19 @@ class KudStore:
 
         return docs
     
+    def count_transactions(self, user_email: str) -> int: 
+        """
+        Counts the number of Kud Transactions that the user has uploaded
+
+        Parameters:
+        - user_email (str): the email of the user
+
+        Returns: 
+        - int: the number of transactions
+        """
+        return self.db[COLL_KUD].count_documents({F_USER: user_email})
+
+    
     def record_reconciliation(self, kud_transaction: KudTransaction, toto_transaction: TotoTransaction):
         """
         Records a reconciliation (made by a user) between a given Kud Transaction and 
@@ -210,7 +223,7 @@ class KudStore:
         
         self.db[COLL_KUD].update_one({"_id": ObjectId(kud_transaction.id)}, {"$set": {F_STATUS: KudStatus.RECONCILED}})
 
-    def count_reconciliations(self, user_email: str): 
+    def count_reconciliations(self, user_email: str) -> int : 
         """
         Retrieves the count of reconciliation records for the specified user. 
 
