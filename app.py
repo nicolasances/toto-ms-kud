@@ -7,6 +7,7 @@ from kud.dlg.PostTransactionReconciliation import PostTransactionReconciliation
 from kud.dlg.CountReconciliations import CountReconciliations
 from kud.dlg.GetReconciliations import GetReconciliations
 from kud.dlg.backup.Backup import Backup
+from kud.dlg.backup.Restore import Restore
 
 app = Flask(__name__)
 CORS(app, origins=["*"])
@@ -51,6 +52,11 @@ def get_reconciliations():
 def backup(): 
     print("POST /backup")
     return Backup().backup()
+
+@app.route('/restore', methods=["POST"])
+def restore(): 
+    print("POST /restore")
+    return Restore().restore(request)
 
 if __name__ == '__main__':
     app.run()
