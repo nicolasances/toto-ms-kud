@@ -8,6 +8,7 @@ from kud.dlg.CountReconciliations import CountReconciliations
 from kud.dlg.GetReconciliations import GetReconciliations
 from kud.dlg.backup.Backup import Backup
 from kud.dlg.backup.Restore import Restore
+from kud.dlg.MarkTransactionInvalid import MarkTransactionInvalid
 
 app = Flask(__name__)
 CORS(app, origins=["*"])
@@ -27,6 +28,11 @@ def on_game_event():
 def get_transactions():
     print("GET /transactions")
     return GetKudTransactions().do(request)
+
+@app.route('/transactions/invalidate', methods=["POST"])
+def invalidate_tx():
+    print("POST /transactions/invalidate")
+    return MarkTransactionInvalid().do(request)
 
 @app.route('/transactions/count', methods=["GET"])
 def count_transactions():

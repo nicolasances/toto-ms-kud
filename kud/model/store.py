@@ -150,6 +150,8 @@ class KudStore:
         """
         This method retrieves the transactions from the database
 
+        Note that this method EXCLUDES the transactions that have been set (kud status) as INVALID
+
         Parameters
         - user_email (str): the user email
         - payments_only (bool): default False, pass True if you want to filter only payments (leaving incomes aside)
@@ -253,6 +255,18 @@ class KudStore:
         print(f"Setting Kud Transaction [{kud_transaction.id}] as [{KudStatus.RECONCILED}]")
         
         self.db[COLL_KUD].update_one({"_id": ObjectId(kud_transaction.id)}, {"$set": {F_STATUS: KudStatus.RECONCILED}})
+
+
+    def invalidate_kud_transaction(self, kud_transaction_id: str): 
+        """
+        Invalidates a Kud transaction. 
+
+        Invalid kud transactions are transactions that the user might not want to save in Toto. 
+        An example could be a transaction that is only moving funds to an investment account, or a transaction representing
+        a dinner out where one paid and the others refunded their part.
+        """
+        self.db[COLL_KUD].update_one({"_id": ObjectId(kud_transaction_id)}, {"$set": {F_STATUS: KudStatus.INVALID}})
+
 
     def get_reconciliations(self, user_email: str, year_month: str) -> list[ReconciliationPO]: 
         """
