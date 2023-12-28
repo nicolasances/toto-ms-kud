@@ -5,6 +5,14 @@ from pprint import pprint
 import re
 import nltk
 from nltk.tokenize import RegexpTokenizer
+import shutil
+import os
+
+# Delete the directory before downloading nltj
+if os.path.exists(nltk.data.path[0]): 
+    shutil.rmtree(nltk.data.path[0])
+
+# Download nltk
 nltk.download('punkt')
 
 class KudExtract:
