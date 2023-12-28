@@ -1,4 +1,4 @@
-import pdfquery as pq
+from totopdfquery import totopdfquery as pq
 import pandas as pd
 import xml.etree.ElementTree as ET
 from pprint import pprint
