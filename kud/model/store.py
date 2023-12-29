@@ -2,6 +2,7 @@ from datetime import datetime
 from config.config import Config
 from kud.model.toto_transaction import TotoTransaction
 from bson import ObjectId
+from dataclasses import dataclass, asdict
 
 F_DATE = "date"
 F_TEXT = "text"
@@ -17,6 +18,7 @@ class KudStatus:
     INVALID = "invalid"
     
 
+@dataclass
 class KudTransaction: 
     
     id: str
@@ -35,6 +37,35 @@ class KudTransaction:
         self.year_month = year_month
         self.user = user
         self.kud_id = kud_id
+
+@dataclass
+class TotoExpensePO: 
+
+    id: str
+    date: str
+    text: str
+    amount: float 
+    year_month: str
+
+    def __init__(self, id, date, text, amount, year_month): 
+        self.id = id
+        self.date = date
+        self.text = text 
+        self.amount = amount 
+        self.year_month = year_month
+
+@dataclass
+class ReconciliationPO: 
+
+    id: str
+    kud_payment: KudTransaction
+    toto_expense: TotoExpensePO
+
+    def __init__(self, id, kud_payment, toto_expense): 
+        self.id = id
+        self.kud_payment = kud_payment
+        self.toto_expense = toto_expense
+
 
 # These fields are for the Reconciliation collection
 RF_KUD_TX_ID = "kudTxId"                # The transaction Id of the Kud
@@ -118,6 +149,8 @@ class KudStore:
     def get_transactions(self, user_email, payments_only = False, max_results = None, non_processed_only = False): 
         """
         This method retrieves the transactions from the database
+
+        Note that this method EXCLUDES the transactions that have been set (kud status) as INVALID
 
         Parameters
         - user_email (str): the user email
@@ -222,6 +255,45 @@ class KudStore:
         print(f"Setting Kud Transaction [{kud_transaction.id}] as [{KudStatus.RECONCILED}]")
         
         self.db[COLL_KUD].update_one({"_id": ObjectId(kud_transaction.id)}, {"$set": {F_STATUS: KudStatus.RECONCILED}})
+
+
+    def invalidate_kud_transaction(self, kud_transaction_id: str): 
+        """
+        Invalidates a Kud transaction. 
+
+        Invalid kud transactions are transactions that the user might not want to save in Toto. 
+        An example could be a transaction that is only moving funds to an investment account, or a transaction representing
+        a dinner out where one paid and the others refunded their part.
+        """
+        self.db[COLL_KUD].update_one({"_id": ObjectId(kud_transaction_id)}, {"$set": {F_STATUS: KudStatus.INVALID}})
+
+
+    def get_reconciliations(self, user_email: str, year_month: str) -> list[ReconciliationPO]: 
+        """
+        Retrieves the reconciliations for the specified user and year month
+        """
+        records = self.db[COLL_RECONCILIATIONS].find({RF_USER: user_email, RF_KUD_TX_YEARMONTH: year_month})
+
+        # Output list
+        reconciliations = []
+
+        # Convert every record into a ReconciliationPO
+        for record in records:
+
+            # Extract the Kud Payment object
+            kud_transaction = KudTransaction(record[RF_KUD_TX_ID], record[RF_KUD_TX_DATE], record[RF_KUD_TX_TEXT], record[RF_KUD_TX_AMOUNT], record[RF_USER], record[RF_KUD_TX_YEARMONTH], record[RF_KUD_ID])
+
+            # Extract the Toto Expense
+            toto_expense = TotoExpensePO(record[RF_TOTO_TX_ID], record[RF_TOTO_TX_DATE], record[RF_TOTO_TX_TEXT], record[RF_TOTO_TX_AMOUNT], record[RF_TOTO_TX_YEARMONTH])
+
+            # Create the ReconciliationPO 
+            reconciliation = ReconciliationPO(str(record["_id"]), kud_transaction, toto_expense)
+
+            # Add to the list
+            reconciliations.append(asdict(reconciliation))
+
+        return reconciliations
+
 
     def count_reconciliations(self, user_email: str) -> int : 
         """
