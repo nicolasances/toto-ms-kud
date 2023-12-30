@@ -1,9 +1,10 @@
 
 import pymongo
 from config.config import Config
+from controller.TotoAPIController import TotoDelegate
 from kud.model.store import KudStore
 
-class CountKudTransactions: 
+class CountKudTransactions(TotoDelegate): 
 
     def __init__(self): 
         self.config = Config()

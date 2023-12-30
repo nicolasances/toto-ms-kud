@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from controller.TotoAPIController import TotoAPIController
 from kud.evt.OnGamesEvent import GamesEventHandler
 from kud.dlg.GetKudTransactions import GetKudTransactions
 from kud.dlg.CountKudTransactions import CountKudTransactions
@@ -37,7 +38,7 @@ def invalidate_tx():
 @app.route('/transactions/count', methods=["GET"])
 def count_transactions():
     print("GET /transactions/count")
-    return CountKudTransactions().do(request)
+    return TotoAPIController("kud").delegate(CountKudTransactions()).process(request)
 
 @app.route('/reconciliations', methods=["POST"])
 def post_reconciliation(): 
