@@ -50,12 +50,12 @@ class Restore:
                 # Download the file
                 blob = bucket.blob(f"kud/{filename}")
                 
-                local_temp_file = tempfile.NamedTemporaryFile(delete = True)
+                local_temp_file = tempfile.NamedTemporaryFile()
                 
-                blob.download_to_file(local_temp_file)
+                blob.download_to_filename(local_temp_file.name)
 
                 # Read the file line by line and save the data
-                with open(local_temp_file.name, 'r') as file:
+                with open(local_temp_file.name, 'r', newline = "\n") as file:
 
                     batch = []
                     count = 0
@@ -64,11 +64,17 @@ class Restore:
 
                         count += 1
 
-                        doc = json.loads(line)
-                        doc["_id"] = ObjectId(doc["id"])
-                        doc.pop("id")
+                        try: 
+                            doc = json.loads(line)
+                            doc["_id"] = ObjectId(doc["id"])
+                            doc.pop("id")
 
-                        batch.append(doc)
+                            batch.append(doc)
+                            
+                        except Exception as e: 
+                            print(f"Error processing line: [{line}]")
+                            print(f"Resulting object: {doc}")
+                            print(e)
 
                         if count % 100 == 0: 
 
@@ -79,7 +85,7 @@ class Restore:
                             batch = []
 
                             print(f"Restored {count} documents to collection {coll}")
-                    
+                            
                     # Insert the remaining docs
                     db.get_collection(coll).insert_many(batch)
 
