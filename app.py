@@ -27,8 +27,7 @@ def on_game_event():
 
 @app.route('/transactions', methods=["GET"])
 def get_transactions():
-    print("GET /transactions")
-    return GetKudTransactions().do(request)
+    return TotoAPIController().delegate(GetKudTransactions()).process(request)
 
 @app.route('/transactions/invalidate', methods=["POST"])
 def invalidate_tx():

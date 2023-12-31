@@ -19,6 +19,7 @@ class TotoAPIController:
     
     def __init__(self) -> None:
         self.config = Config()
+        self.logger = TotoLogger(self.config.api_name)
     
     def delegate(self, delegate: TotoDelegate): 
 
@@ -36,11 +37,8 @@ class TotoAPIController:
             request (Request): the HTTP Request to be processed
 
         Returns:
-            _type_: a JSONified dictionnary containing the response payload (or the error payload)
+            dict: a JSONified dictionnary containing the response payload (or the error payload)
         """
-        # Instantiate the Logger
-        logger = TotoLogger(self.config.api_name)
-        
         # Extract info 
         cid, _ = self.extract_info(request)
         
@@ -51,19 +49,23 @@ class TotoAPIController:
             return validation_result.to_flask_response()
         
         # Log the incoming call
-        logger.log(cid, f"Incoming API Call: {request.method} {request.path}")
+        self.logger.log(cid, f"Incoming API Call: {request.method} {request.path}")
         
         # Create a user context object
         user_context = UserContext(validation_result.token_verification_result.user_email)
         
         # Create an execution context object
-        execution_context = ExecutionContext(self.config, logger, cid)
+        execution_context = ExecutionContext(self.config, self.logger, cid)
 
         # Call the delegate
         return self.delegate.do(request, user_context, execution_context)
     
     
     def extract_info(self, request: Request) -> (str, str):
+        """Extracts needed info from the request
+        
+        Returns cid and auth header
+        """
         
         # Extract cid
         cid = request.headers.get("x-correlation-id")
