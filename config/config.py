@@ -3,6 +3,7 @@ import pymongo
 
 from google.cloud import secretmanager
 from config.util.singleton import singleton
+from controller.TotoLogger import TotoLogger
 
 
 @singleton
@@ -10,18 +11,28 @@ class Config:
     """
     Configuration Class, responsible to load the configurations for this microservice
     """
+    api_name: str
+    mongo_user: str
+    mongo_pswd: str
+    mongo_host: str 
+    jwt_key: str
 
     def __init__(self): 
         
-        print("Loading Configuration..")
+        self.api_name = "toto-ms-kud"
+        
+        logger = TotoLogger(self.api_name)
+        
+        logger.log("INIT", "Loading Configuration..")
 
         self.mongo_user = access_secret_version("toto-ms-kud-mongo-user")
         self.mongo_pswd = access_secret_version("toto-ms-kud-mongo-pswd")
         self.mongo_host = access_secret_version("mongo-host")
+        self.jwt_key = access_secret_version("jwt-signing-key")
         
         self.mongo_connection_string = f"mongodb://{self.mongo_user}:{self.mongo_pswd}@{self.mongo_host}:27017"
 
-        print(f"Configuration Loaded")
+        logger.log("INIT", "Configuration loaded.")
 
 
 

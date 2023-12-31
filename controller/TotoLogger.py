@@ -1,4 +1,4 @@
-
+from datetime import datetime
 
 class TotoLogger: 
     
@@ -12,4 +12,11 @@ class TotoLogger:
             cid (str): the Correlation Id
             msg (str): the message to be logged
         """
-        print(f"[{self.api_name}] - [{cid}] - {msg}")
+        # Get the current timestamp
+        current_timestamp = datetime.now()
+        
+        # Format it
+        formatted_timestamp = current_timestamp.strftime('%Y.%m.%d %H:%M:%S,%f')[:-3]
+        
+        # Log
+        print(f"[{self.api_name}] - [{cid}] - [{formatted_timestamp}] - {msg}")

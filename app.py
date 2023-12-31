@@ -37,8 +37,7 @@ def invalidate_tx():
 
 @app.route('/transactions/count', methods=["GET"])
 def count_transactions():
-    print("GET /transactions/count")
-    return TotoAPIController("kud").delegate(CountKudTransactions()).process(request)
+    return TotoAPIController().delegate(CountKudTransactions()).process(request)
 
 @app.route('/reconciliations', methods=["POST"])
 def post_reconciliation(): 
