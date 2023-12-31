@@ -1,101 +1,101 @@
 import tempfile
 import pymongo
-from pymongo.cursor import Cursor
 import os
-from config.config import Config
-from datetime import datetime
 import json
+from flask import Request
 from google.cloud import storage
 from bson import ObjectId
 
-class Restore: 
+from controller.TotoDelegateDecorator import toto_delegate
+from controller.TotoLogger import TotoLogger
+from controller.model.ExecutionContext import ExecutionContext
+from controller.model.UserContext import UserContext
 
-    def __init__(self) -> None:
-        self.config = Config()
+@toto_delegate
+def restore(request: Request, user_context: UserContext, exec_context: ExecutionContext): 
+    """
+    Backs up all the Kud data that needs backup
+    """
+    logger: TotoLogger = exec_context.logger
+    cid = exec_context.cid
+    
+    date = request.json.get("date")
 
-    def restore(self, request): 
-        """
-        Backs up all the Kud data that needs backup
-        """
-        date = request.json.get("date")
+    # Setup the GCS bucket
+    client = storage.Client()
+    bucket_name = os.environ["BACKUP_BUCKET"]
+    bucket = client.bucket(bucket_name)
 
-        # Setup the GCS bucket
-        client = storage.Client()
-        bucket_name = os.environ["BACKUP_BUCKET"]
-        bucket = client.bucket(bucket_name)
+    logger.log(cid, f"Starting Kud Restore. Restoring date {date}")
 
-        print(f"Starting Kud Restore. Restoring date {date}")
+    # For each collection, clear the data and restore the one in the backup file
+    with pymongo.MongoClient(exec_context.config.mongo_connection_string) as client: 
 
-        # For each collection, clear the data and restore the one in the backup file
-        with pymongo.MongoClient(self.config.mongo_connection_string) as client: 
+        # Get the DB
+        db = client.kud
+        
+        # Get the list of collections
+        collections_cursor = db.list_collection_names()
 
-            # Get the DB
-            db = client.kud
+        # Iterate over each collection to restore the data of each collection
+        for coll in collections_cursor: 
+
+            logger.log(cid, f"Restoring collection [{coll}]")
+
+            # Delete all the data in the collection
+            db.get_collection(coll).delete_many({})
+
+            # Get the GCS filename
+            filename = f"{date}-{coll}.json"
+
+            # Read the data from the file and insert it into the collection
+            # Download the file
+            blob = bucket.blob(f"kud/{filename}")
             
-            # Get the list of collections
-            collections_cursor = db.list_collection_names()
+            local_temp_file = tempfile.NamedTemporaryFile()
+            
+            blob.download_to_filename(local_temp_file.name)
 
-            # Iterate over each collection to restore the data of each collection
-            for coll in collections_cursor: 
+            # Read the file line by line and save the data
+            with open(local_temp_file.name, 'r', newline = "\n") as file:
 
-                print(f"Restoring collection [{coll}]")
+                batch = []
+                count = 0
 
-                # Delete all the data in the collection
-                db.get_collection(coll).delete_many({})
+                for line in file:
 
-                # Get the GCS filename
-                filename = f"{date}-{coll}.json"
+                    count += 1
 
-                # Read the data from the file and insert it into the collection
-                # Download the file
-                blob = bucket.blob(f"kud/{filename}")
-                
-                local_temp_file = tempfile.NamedTemporaryFile()
-                
-                blob.download_to_filename(local_temp_file.name)
+                    try: 
+                        doc = json.loads(line)
+                        doc["_id"] = ObjectId(doc["id"])
+                        doc.pop("id")
 
-                # Read the file line by line and save the data
-                with open(local_temp_file.name, 'r', newline = "\n") as file:
+                        batch.append(doc)
+                        
+                    except Exception as e: 
+                        logger.log(cid, f"Error processing line: [{line}]")
+                        logger.log(cid, f"Resulting object: {doc}")
+                        print(e)
 
-                    batch = []
-                    count = 0
+                    if count % 100 == 0: 
 
-                    for line in file:
+                        # Insert the batch of documents
+                        db.get_collection(coll).insert_many(batch)
 
-                        count += 1
+                        # Clear the batch
+                        batch = []
 
-                        try: 
-                            doc = json.loads(line)
-                            doc["_id"] = ObjectId(doc["id"])
-                            doc.pop("id")
+                        logger.log(cid, f"Restored {count} documents to collection {coll}")
+                        
+                # Insert the remaining docs
+                db.get_collection(coll).insert_many(batch)
 
-                            batch.append(doc)
-                            
-                        except Exception as e: 
-                            print(f"Error processing line: [{line}]")
-                            print(f"Resulting object: {doc}")
-                            print(e)
+                logger.log(cid, f"Restored {count} documents to collection {coll}")
+            
+            logger.log(cid, f"Restore of collection [{coll}] completed.")
 
-                        if count % 100 == 0: 
-
-                            # Insert the batch of documents
-                            db.get_collection(coll).insert_many(batch)
-
-                            # Clear the batch
-                            batch = []
-
-                            print(f"Restored {count} documents to collection {coll}")
-                            
-                    # Insert the remaining docs
-                    db.get_collection(coll).insert_many(batch)
-
-                    print(f"Restored {count} documents to collection {coll}")
-                
-                print(f"Restore of collection [{coll}] completed.")
-
-
-
-        return {"restore": "done", "date": date}
+    return {"restore": "done", "date": date}
 
 
 def doc_to_json(doc: dict):

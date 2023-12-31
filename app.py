@@ -1,67 +1,58 @@
-from flask import Flask, jsonify, request
+from flask import Flask, request
 from flask_cors import CORS
-from controller.TotoAPIController import TotoAPIController
+from kud.dlg.CountKudTransactions import count_kud_transactions
 from kud.evt.OnGamesEvent import GamesEventHandler
-from kud.dlg.GetKudTransactions import GetKudTransactions
-from kud.dlg.CountKudTransactions import CountKudTransactions
-from kud.dlg.PostTransactionReconciliation import PostTransactionReconciliation
-from kud.dlg.CountReconciliations import CountReconciliations
-from kud.dlg.GetReconciliations import GetReconciliations
-from kud.dlg.backup.Backup import Backup
-from kud.dlg.backup.Restore import Restore
-from kud.dlg.MarkTransactionInvalid import MarkTransactionInvalid
+from kud.dlg.GetKudTransactions import get_kud_transactions
+from kud.dlg.PostTransactionReconciliation import post_transaction_reconciliation
+from kud.dlg.CountReconciliations import count_reconciliations
+from kud.dlg.GetReconciliations import get_reconciliations
+from kud.dlg.backup.Backup import backup
+from kud.dlg.backup.Restore import restore
+from kud.dlg.MarkTransactionInvalid import mark_transaction_invalid
 
 app = Flask(__name__)
 CORS(app, origins=["*"])
 
 @app.route('/', methods=['GET'])
 def smoke():
-    print("GET /")
     return {"api": "toto-ms-kud", "running": True}
-
-@app.route('/events/games', methods=["POST"])
-def on_game_event():
-    print("POST /events/games")
-    GamesEventHandler().process_event(request)
-    return {"status": "processed"}
 
 @app.route('/transactions', methods=["GET"])
 def get_transactions():
-    return TotoAPIController().delegate(GetKudTransactions()).process(request)
+    return get_kud_transactions(request)
 
 @app.route('/transactions/invalidate', methods=["POST"])
 def invalidate_tx():
-    print("POST /transactions/invalidate")
-    return MarkTransactionInvalid().do(request)
+    return mark_transaction_invalid(request)
 
 @app.route('/transactions/count', methods=["GET"])
 def count_transactions():
-    return TotoAPIController().delegate(CountKudTransactions()).process(request)
+    return count_kud_transactions(request)
 
 @app.route('/reconciliations', methods=["POST"])
 def post_reconciliation(): 
-    print("POST /reconciliations")
-    return PostTransactionReconciliation().do(request)
+    return post_transaction_reconciliation(request)
 
 @app.route('/reconciliations/count', methods=["GET"])
-def count_reconciliations(): 
-    print("GET /reconciliations/count")
-    return CountReconciliations().do(request)
+def get_reconciliations_count(): 
+    return count_reconciliations(request)
 
 @app.route('/reconciliations', methods=["GET"])
-def get_reconciliations(): 
-    print("GET /reconciliations")
-    return GetReconciliations().do(request)
+def retrieve_reconciliations(): 
+    return get_reconciliations(request)
 
 @app.route('/backup', methods=["POST"])
-def backup(): 
-    print("POST /backup")
-    return Backup().backup()
+def post_backup(): 
+    return backup(request)
 
 @app.route('/restore', methods=["POST"])
-def restore(): 
-    print("POST /restore")
-    return Restore().restore(request)
+def post_restore(): 
+    return restore(request)
+
+@app.route('/events/games', methods=["POST"])
+def on_game_event():
+    GamesEventHandler().process_event(request)
+    return {"status": "processed"}
 
 if __name__ == '__main__':
     app.run()

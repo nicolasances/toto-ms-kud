@@ -1,5 +1,6 @@
 from datetime import datetime
 from config.config import Config
+from controller.TotoLogger import TotoLogger
 from kud.model.toto_transaction import TotoTransaction
 from bson import ObjectId
 from dataclasses import dataclass, asdict
@@ -86,8 +87,10 @@ COLL_KUD = "kud"
 
 class KudStore: 
 
-    def __init__(self, db): 
+    def __init__(self, db, cid: str = None): 
         self.db = db
+        self.logger = TotoLogger(Config().api_name)
+        self.cid = cid
 
     def save_kud_data(self, kud_items, user_email, kud_gcs_filepath, year, month):
         """
@@ -119,7 +122,7 @@ class KudStore:
 
         self.db.kud.insert_many(pos)
 
-        print(f"Inserted [{len(pos)}] Kud items for Kud Id [{kud_id}]")
+        self.logger.log(self.cid, f"Inserted [{len(pos)}] Kud items for Kud Id [{kud_id}]")
 
         return {'n_inserted': len(pos)}
 
@@ -138,7 +141,7 @@ class KudStore:
 
         delete_result = self.db.kud.delete_many(delete_filter)
 
-        print(f"Deleted [{delete_result.deleted_count}] items with Kud Id [{kud_id}]")
+        self.logger.log(self.cid, f"Deleted [{delete_result.deleted_count}] items with Kud Id [{kud_id}]")
 
     def build_kud_id(self, year, month): 
         """
@@ -227,7 +230,7 @@ class KudStore:
         del_filter[RF_KUD_TX_ID] = kud_transaction.id
 
         # Delete all reconciliations for that Kud Transaction Id
-        print(f"Deleting any existing reconciliation entry for Kud Transaction Id [{kud_transaction.id}]")
+        self.logger.log(self.cid, f"Deleting any existing reconciliation entry for Kud Transaction Id [{kud_transaction.id}]")
 
         self.db[COLL_RECONCILIATIONS].delete_many(del_filter)
 
@@ -246,13 +249,13 @@ class KudStore:
         recon[RF_TOTO_TX_YEARMONTH] = toto_transaction.year_month
         recon[RF_USER] = kud_transaction.user
 
-        print(f"Saving new reconciliation record: {recon}")
+        self.logger.log(self.cid, f"Saving new reconciliation record: {recon}")
 
         # Insert the reconciliation
         self.db[COLL_RECONCILIATIONS].insert_one(recon)
 
         # Update the Kud transaction and set its state to "reconciled"
-        print(f"Setting Kud Transaction [{kud_transaction.id}] as [{KudStatus.RECONCILED}]")
+        self.logger.log(self.cid, f"Setting Kud Transaction [{kud_transaction.id}] as [{KudStatus.RECONCILED}]")
         
         self.db[COLL_KUD].update_one({"_id": ObjectId(kud_transaction.id)}, {"$set": {F_STATUS: KudStatus.RECONCILED}})
 
