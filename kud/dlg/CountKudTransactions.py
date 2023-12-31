@@ -1,35 +1,33 @@
 
+from flask import Request
 import pymongo
-from config.config import Config
+from controller.TotoDelegateDecorator import toto_delegate
+from controller.model.ExecutionContext import ExecutionContext
+from controller.model.UserContext import UserContext
 from kud.model.store import KudStore
 
-class CountKudTransactions: 
+@toto_delegate
+def count_kud_transactions(request: Request, user_context: UserContext, exec_context: ExecutionContext): 
+    """
+    This method counts the number of Kud Transactions available for the user
+    """
+    config = exec_context.config
+    
+    # Extract core data 
+    user_email = user_context.email
 
-    def __init__(self): 
-        self.config = Config()
+    # Get the data from the store
+    with pymongo.MongoClient(config.mongo_connection_string) as client: 
 
-    def do(self, request): 
-        """
-        This method counts the number of Kud Transactions available for the user
+        db = client.kud
+        
+        # Instantiate the store
+        kud_store = KudStore(db, cid=exec_context.cid)
 
-        Paramters
-        - request.args.user should countain the user email
-        """
-        # Extract core data from the request
-        user_email = request.args.get('user')
+        # Count the Kud Transactions
+        count = kud_store.count_transactions(user_email)
 
-        # Get the data from the store
-        with pymongo.MongoClient(self.config.mongo_connection_string) as client: 
-
-            db = client.kud
-            
-            # Instantiate the store
-            kud_store = KudStore(db)
-
-            # Count the Kud Transactions
-            count = kud_store.count_transactions(user_email)
-
-        return {
-            "count": count
-        }
+    return {
+        "count": count
+    }
 
