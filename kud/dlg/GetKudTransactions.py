@@ -1,13 +1,14 @@
 
 from flask import Request
 import pymongo
-from controller.TotoDelegateDecorator import toto_delegate
-from controller.TotoLogger import TotoLogger
-from controller.model.ExecutionContext import ExecutionContext
-from controller.model.UserContext import UserContext
+from config.config import Config
+from totoapicontroller.TotoDelegateDecorator import toto_delegate
+from totoapicontroller.TotoLogger import TotoLogger
+from totoapicontroller.model.ExecutionContext import ExecutionContext
+from totoapicontroller.model.UserContext import UserContext
 from kud.model.store import KudStore
 
-@toto_delegate
+@toto_delegate(config_class = Config)
 def get_kud_transactions(request: Request, user_context: UserContext, exec_context: ExecutionContext): 
     
     logger: TotoLogger = exec_context.logger

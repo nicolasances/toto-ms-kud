@@ -5,13 +5,14 @@ import json
 from flask import Request
 from google.cloud import storage
 from bson import ObjectId
+from config.config import Config
 
-from controller.TotoDelegateDecorator import toto_delegate
-from controller.TotoLogger import TotoLogger
-from controller.model.ExecutionContext import ExecutionContext
-from controller.model.UserContext import UserContext
+from totoapicontroller.TotoDelegateDecorator import toto_delegate
+from totoapicontroller.TotoLogger import TotoLogger
+from totoapicontroller.model.ExecutionContext import ExecutionContext
+from totoapicontroller.model.UserContext import UserContext
 
-@toto_delegate
+@toto_delegate(config_class = Config)
 def restore(request: Request, user_context: UserContext, exec_context: ExecutionContext): 
     """
     Backs up all the Kud data that needs backup
