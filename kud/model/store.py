@@ -149,7 +149,7 @@ class KudStore:
         """
         return f"kud-{year}-{month}"
     
-    def get_transactions(self, user_email, payments_only = False, max_results = None, non_processed_only = False): 
+    def get_transactions(self, user_email: str, transaction_type: str = "payment", max_results: int = None, non_processed_only: bool = False): 
         """
         This method retrieves the transactions from the database
 
@@ -169,8 +169,11 @@ class KudStore:
         query[F_USER] = user_email
         
         # If the user only wants payments
-        if payments_only: 
+        if transaction_type == "paymemt": 
             query[F_AMOUNT] = {"$lt": 0}
+        elif transaction_type == 'income': 
+            query[F_AMOUNT] = {"$gt": 0}
+            
 
         # If the user only wants "non processed" items
         if non_processed_only: 

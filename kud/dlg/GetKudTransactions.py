@@ -16,10 +16,11 @@ def get_kud_transactions(request: Request, user_context: UserContext, exec_conte
     # Extract core data from the request
     user_email = user_context.email
     
-    only_payments = request.args.get('paymentsOnly', False)
+    # Transaction type can be "payment", "income", "any"
+    transaction_type = request.args.get('transactionType', 'payment')
     max_results = int(request.args.get('maxResults', 0))
     
-    logger.log(exec_context.cid, f"Extracting Kud Transactions for user [{user_email}] with parameters [Payments Only: {only_payments}, Max Results: {max_results}]")
+    logger.log(exec_context.cid, f"Extracting Kud Transactions for user [{user_email}] with parameters [Transaction type: {transaction_type}, Max Results: {max_results}]")
 
     # Get the data from the store
     with pymongo.MongoClient(exec_context.config.mongo_connection_string) as client: 
@@ -27,7 +28,7 @@ def get_kud_transactions(request: Request, user_context: UserContext, exec_conte
         db = client.kud
         kud_store = KudStore(db, cid=exec_context.cid)
 
-        payments = kud_store.get_transactions(user_email, payments_only=only_payments, max_results=max_results, non_processed_only=True)
+        payments = kud_store.get_transactions(user_email, transaction_type=transaction_type, max_results=max_results, non_processed_only=True)
 
     return {
         "payments": payments
