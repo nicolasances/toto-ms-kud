@@ -1,12 +1,13 @@
 from flask import Request
 import pymongo
-from controller.TotoDelegateDecorator import toto_delegate
-from controller.model.ExecutionContext import ExecutionContext
-from controller.model.UserContext import UserContext
+from config.config import Config
+from totoapicontroller.TotoDelegateDecorator import toto_delegate
+from totoapicontroller.model.ExecutionContext import ExecutionContext
+from totoapicontroller.model.UserContext import UserContext
 from kud.model.store import KudStore, KudTransaction
 from kud.model.toto_transaction import TotoTransaction
 
-@toto_delegate
+@toto_delegate(config_class = Config)
 def post_transaction_reconciliation(request: Request, user_context: UserContext, exec_context: ExecutionContext): 
     """
     This method reconciles the provided kud transaction with the corresponding (provided) Toto transaction.

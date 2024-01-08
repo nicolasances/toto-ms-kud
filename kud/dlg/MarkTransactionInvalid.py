@@ -1,12 +1,12 @@
 from flask import Request
 import pymongo
 from config.config import Config
-from controller.TotoDelegateDecorator import toto_delegate
-from controller.model.ExecutionContext import ExecutionContext
-from controller.model.UserContext import UserContext
+from totoapicontroller.TotoDelegateDecorator import toto_delegate
+from totoapicontroller.model.ExecutionContext import ExecutionContext
+from totoapicontroller.model.UserContext import UserContext
 from kud.model.store import KudStore
 
-@toto_delegate
+@toto_delegate(config_class = Config)
 def mark_transaction_invalid(request: Request, user_context: UserContext, exec_context: ExecutionContext): 
     """
     This method marks a Kud Transaction as INVALID

@@ -1,6 +1,6 @@
 from datetime import datetime
 from config.config import Config
-from controller.TotoLogger import TotoLogger
+from totoapicontroller.TotoLogger import TotoLogger
 from kud.model.toto_transaction import TotoTransaction
 from bson import ObjectId
 from dataclasses import dataclass, asdict
@@ -89,7 +89,7 @@ class KudStore:
 
     def __init__(self, db, cid: str = None): 
         self.db = db
-        self.logger = TotoLogger(Config().api_name)
+        self.logger = TotoLogger(Config().get_api_name())
         self.cid = cid
 
     def save_kud_data(self, kud_items, user_email, kud_gcs_filepath, year, month):
