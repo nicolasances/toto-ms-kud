@@ -16,8 +16,10 @@ def count_reconciliations(request: Request, user_context: UserContext, exec_cont
     
     # Extract data 
     user_email = user_context.email
+    
+    tx_type = request.args.get("transactionType", "any")
 
-    logger.log(exec_context.cid, f"Counting Reconciliation records for user [{user_email}]")
+    logger.log(exec_context.cid, f"Counting Reconciliation records for user [{user_email}] and transaction type [{tx_type}]")
 
     with pymongo.MongoClient(exec_context.config.mongo_connection_string) as client: 
         
@@ -27,6 +29,6 @@ def count_reconciliations(request: Request, user_context: UserContext, exec_cont
         kud_store = KudStore(db, cid=exec_context.cid)
 
         # Retrieve the reconciliations
-        count = kud_store.count_reconciliations(user_email)
+        count = kud_store.count_reconciliations(user_email, tx_type)
 
     return {"reconciliationCount": count}

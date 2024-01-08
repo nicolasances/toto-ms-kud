@@ -169,7 +169,7 @@ class KudStore:
         query[F_USER] = user_email
         
         # If the user only wants payments
-        if transaction_type == "paymemt": 
+        if transaction_type == "payment": 
             query[F_AMOUNT] = {"$lt": 0}
         elif transaction_type == 'income': 
             query[F_AMOUNT] = {"$gt": 0}
@@ -301,16 +301,25 @@ class KudStore:
         return reconciliations
 
 
-    def count_reconciliations(self, user_email: str) -> int : 
+    def count_reconciliations(self, user_email: str, tx_type: str = "any") -> int : 
         """
         Retrieves the count of reconciliation records for the specified user. 
 
         Parameters 
         - user_email (str): the user email
+        - tx_type (str): the type of transaction
 
         Returns:
         - int: the count of reconciliation records
         """
-        return self.db[COLL_RECONCILIATIONS].count_documents({RF_USER: user_email})
+        
+        filter = { RF_USER: user_email }
+        
+        if tx_type == 'payment': 
+            filter[RF_KUD_TX_AMOUNT] = {"$lt": 0} 
+        elif tx_type == 'income': 
+            filter[RF_KUD_TX_AMOUNT] = {"$gt": 0} 
+        
+        return self.db[COLL_RECONCILIATIONS].count_documents(filter)
         
 
