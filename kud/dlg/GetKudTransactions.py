@@ -28,9 +28,9 @@ def get_kud_transactions(request: Request, user_context: UserContext, exec_conte
         db = client.kud
         kud_store = KudStore(db, cid=exec_context.cid)
 
-        payments = kud_store.get_transactions(user_email, transaction_type=transaction_type, max_results=max_results, non_processed_only=True)
+        transactions = kud_store.get_transactions(user_email, transaction_type=transaction_type, max_results=max_results, non_processed_only=True)
 
     return {
-        "payments": payments
+        "transactions": transactions
     }
 
