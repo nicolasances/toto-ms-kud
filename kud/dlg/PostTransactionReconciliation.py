@@ -18,13 +18,13 @@ def post_transaction_reconciliation(request: Request, user_context: UserContext,
     """
     # Build the Kud Transaction from the request
     kud_transaction = KudTransaction(
-        request.json.get('kudPayment')["id"], 
-        request.json.get('kudPayment')["date"], 
-        request.json.get('kudPayment')["text"], 
-        request.json.get('kudPayment')["amount"], 
-        request.json.get('kudPayment')["user"], 
-        request.json.get('kudPayment')["yearMonth"], 
-        request.json.get('kudPayment')["kudId"]
+        request.json.get('kudTransaction')["id"], 
+        request.json.get('kudTransaction')["date"], 
+        request.json.get('kudTransaction')["text"], 
+        request.json.get('kudTransaction')["amount"], 
+        request.json.get('kudTransaction')["user"], 
+        request.json.get('kudTransaction')["yearMonth"], 
+        request.json.get('kudTransaction')["kudId"]
     )
 
     # Build the Toto Transaction from the request
