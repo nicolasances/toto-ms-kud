@@ -23,7 +23,7 @@ class KudExtract:
     tokenizer = RegexpTokenizer(r'\w+')
     date_pattern = re.compile(r'\d{2}\.\d{2}\s*$')
 
-    def __init__(self, year, decimal_separator = ',', thousands_separator = '.'):
+    def __init__(self, year, decimal_separator = '.', thousands_separator = ','):
         self.year = year
         self.decimal_separator = decimal_separator
         self.thousands_separator = thousands_separator
