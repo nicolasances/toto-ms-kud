@@ -7,15 +7,15 @@ def get_separators(year, month):
     """
     dec_separator = '.'
     thousands_separator = ','
-
-    if int(year) > 2020: 
+    
+    if int(year) == 2024 and int(month) >= 6:
+        dec_separator = '.'
+        thousands_separator = ','
+    elif int(year) > 2020: 
         dec_separator = ','
         thousands_separator = '.'
     elif int(year) == 2020 and int(month) >= 9: 
         dec_separator = ','
         thousands_separator = '.'
-    elif int(year) == 2024 and int(month) >= 6:
-        dec_separator = '.'
-        thousands_separator = ','
 
     return dec_separator, thousands_separator
