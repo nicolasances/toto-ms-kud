@@ -30,7 +30,7 @@ class KudExtract:
 
     def process_pdf(self, filepath): 
 
-        print(f"Processing Kontoudskrift {filepath} for year {self.year}")
+        print(f"Processing Kontoudskrift {filepath} for year {self.year}. Decimal separator: {self.decimal_separator}. Thousands separator: {self.thousands_separator}")
 
         # Load PDF and generate XML
         self.__load_pdf_contents(filepath)
